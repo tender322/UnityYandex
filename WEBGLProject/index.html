@@ -27,11 +27,11 @@
     </div>
     <script>
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/v5.loader.js";
+      var loaderUrl = buildUrl + "/v11.loader.js";
       var config = {
-        dataUrl: buildUrl + "/v5.data.unityweb",
-        frameworkUrl: buildUrl + "/v5.framework.js.unityweb",
-        codeUrl: buildUrl + "/v5.wasm.unityweb",
+        dataUrl: buildUrl + "/v11.data.unityweb",
+        frameworkUrl: buildUrl + "/v11.framework.js.unityweb",
+        codeUrl: buildUrl + "/v11.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "VIDEOS",
@@ -59,13 +59,13 @@
       loadingBar.style.display = "block";
 
       var script = document.createElement("script");
-      var unityI = null; // ДОПИСАТЬ
+      var unityI = null;
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
         }).then((unityInstance) => {
-          unityI = unityInstance; //ДОПИСАТЬ
+          unityI = unityInstance;
           loadingBar.style.display = "none";
           fullscreenButton.onclick = () => {
             unityInstance.SetFullscreen(1);
@@ -82,7 +82,7 @@
       var player;
       var sdk;
       var payments = null;
-      
+
       YaGames.init({
         adv:{
           onAdvClose: wasShown =>{console.info('adv closed!');
@@ -94,6 +94,29 @@
             sdk.adv.showFullscreenAdv({callbacks:{}});
       });
 
+      var lb;
+
+    function GetLeaderBoard(){
+      sdk.getLeaderboards().then(_lb => lb = _lb);
+            }
+
+    function SetLeaderBoard(score){
+      sdk.getLeaderboards()
+          .then(lb => {
+            console.log(score);
+            lb.setLeaderboardScore('LeaderBoard', score);});
+        }
+
+    function GetLeaderBoardEntries(){
+      sdk.getLeaderboards()
+          .then(lb => {lb.getLeaderboardEntries('LeaderBoard', { quantityTop: 10, includeUser: true, quantityAround: 3 }).then(res =>
+            {
+              console.log(res);
+              unityI.SendMessage('YandexSDK', 'BoardEntriesReady', JSON.stringify(res));});
+            });
+      }
+
+
 
       function auth(){
         initPlayer().then(() =>{
@@ -104,13 +127,14 @@
               getUser();
           });
           });
-          }
+        }
+
 
       function initPlayer(){
         console.log('InitPlayerTry')
         return sdk.getPlayer().then(_player => {
                 console.log('InitPlayer2');
-                player = _player;  
+                player = _player;
             });}
 
       function getUser(){
@@ -125,6 +149,7 @@
             player.getData().then(stats =>{
               console.log('Data is getting');
               console.log(JSON.stringify(stats));
+              GetLeaderBoard();
               unityI.SendMessage('YandexSDK', 'DataGetting', JSON.stringify(stats));
            });
       }
@@ -136,9 +161,6 @@
         console.log('saved');
       }).catch(()=>{console.log('unsaved')});
     }
-     
-
-
 
       function showFullscrenAd(){
         sdk.adv.showFullscreenAdv({
@@ -156,7 +178,7 @@
             onRewarded: () => {
                 unityI.SendMessage('YandexSDK', 'RewardGetting');
                 console.log('Rewarded! Id: ' + id);},
-            onClose: () => {}, 
+            onClose: () => {},
             onError: (e) => {
                 var data = {"id" : id, "error" : error};
                 console.log('Error while open video ad:', e);

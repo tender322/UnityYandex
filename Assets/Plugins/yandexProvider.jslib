@@ -18,6 +18,14 @@ mergeInto(LibraryManager.library, {
 
   ShowRewardADV: function() {
     showRewardedAd();
+  },
+  
+  GetLeaderBoardEntries: function(){
+    GetLeaderBoardEntries();
+  },
+  
+  SetLeaderBoard: function(score){
+    SetLeaderBoard(score);
   }
 
 });
